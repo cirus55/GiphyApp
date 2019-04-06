@@ -6,16 +6,40 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Giphy App</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <style>
+
+        body{
+            background-color:darkgray;
+        }
+
+        button {
+            border-radius: 5px;
+            color: white;
+            background-color: black;
+            font-family: 'Roboto', sans-serif;
+            padding: 5px;
+
+        }
+
         #myGifs{
             width: 50%;
             float: left;
-        };
+        }
 
         #myFavs{
             width: 50%;
             float: right;
-        };
+        }
+
+        .wrapper{
+            border-style: solid;
+            border-radius: 10px;
+            background-color: white;
+            box-shadow: 5px 5px 5px;
+            padding: 30px;
+        }
+
     </style>
 </head>
 <body>
@@ -87,6 +111,7 @@
                 var results = res;
                 for (var i = 0; i < results.data.length; i++) {
                     var newDiv = $("<div>");
+                    newDiv.addClass("wrapper");
                     newDiv.attr("id",results.data[i].id)
                     var newGIF = $("<img>");
                     newGIF.attr("src",results.data[i].images.fixed_height_still.url);
@@ -150,7 +175,7 @@
         };
 
         function fRmvGiphy(){
-            $("#"+$(this).attr("rfc")).empty();
+            $("#"+$(this).attr("rfc")).remove();
         };
         
         function saveGiphy() {
