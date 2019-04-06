@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Giphy App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        #myGifs{
+            width: 50%;
+            float: left;
+        };
+
+        #myFavs{
+            width: 50%;
+            float: right;
+        };
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form>
+            <span>Add a Giphy Button</span>
+            <input id="topic" type="text">
+            <input id="addButton" type="submit">
+        </form>
+        <br>
+        <div id="myButtons"></div>
+        <br>
+        <div id="myGifs"></div>
+        <div id="myFavs"></div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script>
+
+        
+        var arrayGiphy = ["Elizabeth Hurley","Scarlett Johanson","Jennifer Aniston"];
+        var arrayMem = [];
+
+        if (sessionStorage.hasOwnProperty("topicMemory")){
+            arrayMem = JSON.parse(sessionStorage.getItem("topicMemory"));
+            for (var i = 0; i < arrayMem.length; i++) {
+                arrayGiphy.push(arrayMem[i]);
+            }
+        }
+
+        for (var i = 0; i < arrayGiphy.length; i++) {
+            var newBtn = $("<button>");
+            newBtn.attr("id","Giphy");
+            newBtn.attr("data-topic",arrayGiphy[i]);
+            newBtn.text(arrayGiphy[i]);
+            $("#myButtons").append(newBtn);
+        };
+
+
+        $(document).on("click", "#addButton", fAddButton); 
+        $(document).on("click", "#Giphy", fAddGiphy); 
+        $(document).on("click","#GIFclick", fClickGiphy);
+        $(document).on("click","#fav",fAddFavGiphy);
+        $(document).on("click","#ret",fRmvFavGiphy);
+        $(document).on("click","#rmv",fRmvGiphy);
+        $(document).on("click","#save",saveGiphy);
+
+
+        function fAddButton(){
+            event.preventDefault();
+            var newBtn = $("<button>");
+            newBtn.attr("id","Giphy");
+            newBtn.attr("data-topic",$("#topic").val());
+            newBtn.text($("#topic").val());
+            $("#myButtons").append(newBtn);
+            arrayMem.push($("#topic").val());
+            sessionStorage.setItem('topicMemory', JSON.stringify(arrayMem));
+        };
+
+        function fAddGiphy(){
+           
+            var topic = $(this).attr("data-topic");
+            var APIkey = "jEvNJw7ZLyt5lBJkzvApq5POEYxRaxiQ"
+            var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + topic + " &api_key=" + APIkey + "&limit=10"
+
+            $.ajax({
+                url: queryURL,
+                method: "GET"
+            }).then(function (res) {
+                var results = res;
+                for (var i = 0; i < results.data.length; i++) {
+                    var newDiv = $("<div>");
+                    newDiv.attr("id",results.data[i].id)
+                    var newGIF = $("<img>");
+                    newGIF.attr("src",results.data[i].images.fixed_height_still.url);
+                    newGIF.attr("id","GIFclick");
+                    newGIF.attr("status","still");
+                    newGIF.attr("data-still",results.data[i].images.fixed_height_still.url);
+                    newGIF.attr("data-active",results.data[i].images.fixed_height.url);
+                    var newP = $("<p>");
+                    newP.text("Rating: "+results.data[i].rating);
+                    
+                    var newBtnFav = $("<button>");
+                    newBtnFav.text("Add to Favorites")
+                    newBtnFav.attr("id","fav");
+                    newBtnFav.attr("rfc",results.data[i].id);
+                    
+                    var newBtnRmv = $("<button>");
+                    newBtnRmv.text("Remove")
+                    newBtnRmv.attr("id","rmv");
+                    newBtnRmv.attr("rfc",results.data[i].id);
+                    
+                    var newBtnSave = $("<button>");
+                    newBtnSave.text("Donwload");
+                    newBtnSave.attr("id","save");
+                    newBtnSave.attr("file",results.data[i].images.fixed_height.url);
+                    
+
+                    newDiv.append(newGIF);
+                    newDiv.prepend(newP);     
+                    newDiv.append($("<br>"));
+                    newDiv.append(newBtnFav);
+                    newDiv.append(newBtnRmv);
+                    newDiv.append(newBtnSave);
+                    $("#myGifs").append(newDiv);   
+                }
+            })
+            };
+
+        function fClickGiphy(){
+
+            if ($(this).attr("status")==="still"){
+                $(this).attr("status","active");
+                $(this).attr("src",$(this).attr("data-active"));
+            }
+            else {
+                $(this).attr("status","still");
+                $(this).attr("src",$(this).attr("data-still"));
+            }
+
+        };
+
+        function fAddFavGiphy(){
+            $(this).text("Remove from favorites");
+            $(this).attr("id","ret");
+            $("#myFavs").append($("#"+$(this).attr("rfc")));
+        };
+
+        function fRmvFavGiphy(){
+            $(this).text("Add to Favorites");
+            $(this).attr("id","fav");
+            $("#myGifs").prepend($("#"+$(this).attr("rfc")));
+        };
+
+        function fRmvGiphy(){
+            $("#"+$(this).attr("rfc")).empty();
+        };
+        
+        function saveGiphy() {
+            var filename = $(this).attr("file");
+            var element = document.createElement('a');
+            element.setAttribute('href', filename);
+            element.setAttribute('download', filename);
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        };
+
+    </script>
+</body>
+
+</html>
